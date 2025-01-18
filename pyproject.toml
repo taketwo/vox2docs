@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "vox2docs"
+version = "0.0.1"
+description = "A system for processing voice recordings into transcripts and insights"
+authors = ["Sergey Alexandrov <alexandrov88@gmail.com>"]
+license = "MIT"
+packages = [{ include = "vox2docs" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+click = "^8.1.8"
+
+[tool.poetry.scripts]
+vox2docs = "vox2docs.cli:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
