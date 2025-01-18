@@ -9,6 +9,7 @@ packages = [{ include = "vox2docs" }]
 [tool.poetry.dependencies]
 python = "^3.11"
 click = "^8.1.8"
+watchdog = "^6.0.0"
 
 [tool.poetry.scripts]
 vox2docs = "vox2docs.cli:main"
