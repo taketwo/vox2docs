@@ -2,23 +2,14 @@
 
 from __future__ import annotations
 
-import logging
 import signal
-
-import sys
-
 import time
+
+from vox2docs.logging import get_logger
 
 from watchdog.observers import Observer
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    stream=sys.stdout,
-)
-
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class Daemon:

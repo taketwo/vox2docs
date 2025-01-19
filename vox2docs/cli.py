@@ -5,6 +5,10 @@ from importlib import metadata
 import click
 
 from vox2docs.daemon import Daemon
+from vox2docs.logging import configure_logging, DEBUG, get_logger, INFO
+
+
+logger = get_logger(__name__)
 
 
 def get_version() -> str:
@@ -16,9 +20,15 @@ def get_version() -> str:
 
 
 @click.group()
+@click.option(
+    "--debug",
+    is_flag=True,
+    help="Enable debug logging.",
+)
 @click.version_option(version=get_version(), prog_name="vox2docs")
-def main() -> None:
+def main(*, debug: bool = False) -> None:
     """vox2docs - Process voice recordings into transcripts and insights."""
+    configure_logging(level=DEBUG if debug else INFO)
 
 
 @main.group()
