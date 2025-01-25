@@ -63,9 +63,10 @@ def daemon() -> None:
 
 
 @daemon.command()
-def run() -> None:
+@pass_state
+def run(state: State) -> None:
     """Run the daemon process."""
-    daemon = Daemon()
+    daemon = Daemon(state.config)
     daemon.run()
 
 
