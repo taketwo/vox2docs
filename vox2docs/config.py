@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import yaml
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from vox2docs.logging import get_logger
 
@@ -26,19 +26,59 @@ class ConfigLoadError(Exception):
         return cls("No config file found")
 
 
+class DirectoryConfig(BaseModel):
+    """Configuration for the directory structure.
+
+    All paths that are not absolute are resolved relative to the base directory.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    base: Path = Field(description="Base directory for vox2docs data")
+    inbox: Path = Field(
+        default="inbox",
+        description="Directory to watch for new recordings",
+    )
+    recordings: Path = Field(
+        default="recordings",
+        description="Directory for processed recordings",
+    )
+    transcripts: Path = Field(
+        default="transcripts",
+        description="Directory for transcripts",
+    )
+    analysis: Path = Field(
+        default="analysis",
+        description="Directory for analysis outputs",
+    )
+
+    def __init__(self, **data) -> None:
+        """Initialize directory config and resolve paths."""
+        super().__init__(**data)
+        base = self.base.expanduser().resolve()
+        object.__setattr__(self, "base", base)
+        for field in ["inbox", "recordings", "transcripts", "analysis"]:
+            path = getattr(self, field)
+            path = path.expanduser()
+            if not path.is_absolute():
+                object.__setattr__(self, field, (base / path).resolve())
+            else:
+                object.__setattr__(self, field, path.resolve())
+
+
 class Config(BaseModel):
     """Application configuration.
 
     Attributes
     ----------
-    input_path : Path
-        Path to watch for new recordings.
+    directories : DirectoryConfig
+        Configuration for the directory structure.
 
     """
 
     model_config = ConfigDict(frozen=True)
 
-    input_path: Path
+    directories: DirectoryConfig
 
     @classmethod
     def from_path_or_default(cls, path: Path | None = None) -> Config:
