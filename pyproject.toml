@@ -6,28 +6,22 @@ authors = [{ name = "Sergey Alexandrov", email = "alexandrov88@gmail.com" }]
 requires-python = "~=3.11"
 license = "MIT"
 dependencies = [
-    "click>=8.1.8,<9",
-    "watchdog>=6.0.0,<7",
-    "pydantic>=2.10.5,<3",
-    "pyyaml>=6.0.2,<7",
-    "rich>=13.9.4,<14",
+  "click>=8.1.8,<9",
+  "watchdog>=6.0.0,<7",
+  "pydantic>=2.10.5,<3",
+  "pyyaml>=6.0.2,<7",
+  "rich>=14.0.0,<15",
 ]
 
 [project.scripts]
 vox2docs = "vox2docs.cli:main"
 
 [dependency-groups]
-dev = [
-    "mypy>=1.14.1,<2",
-    "types-pyyaml>=6.0.12.20241230,<7",
-]
+dev = ["mypy>=1.14.1,<2", "types-pyyaml>=6.0.12.20241230,<7"]
 test = ["pytest>=8.3.4,<9"]
 
 [tool.uv]
-default-groups = [
-    "dev",
-    "test",
-]
+default-groups = ["dev", "test"]
 
 [tool.hatch.build.targets.sdist]
 include = ["vox2docs"]
