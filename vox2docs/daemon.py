@@ -27,8 +27,8 @@ class Daemon:
         self.config = config
         self.pending: deque[Path] = deque()
         self.monitor = NewFileMonitor(
-            path=config.directories.inbox,
-            extensions={".m4a"},  # TODO: Move to config
+            path=config.monitor.input_directory,
+            extensions=config.monitor.extensions,
             queue=self.pending,
         )
         signal.signal(signal.SIGTERM, self._handle_termination)
