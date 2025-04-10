@@ -70,5 +70,25 @@ def run(state: State) -> None:
     daemon.run()
 
 
+@main.group()
+def config() -> None:
+    """Config management operations."""
+
+
+@config.command()
+@pass_state
+def show(state: State) -> None:
+    """Display the loaded config."""
+    from rich.console import Console
+    from rich.pretty import Pretty
+
+    Console().print(
+        Pretty(
+            state.config,
+            expand_all=True,
+        ),
+    )
+
+
 if __name__ == "__main__":
     main()
