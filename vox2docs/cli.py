@@ -53,7 +53,7 @@ def main(state: State, *, config: Path | None, debug: bool = False) -> None:
     try:
         state.config = Config.from_path_or_default(config)
     except ConfigLoadError:
-        logger.exception()
+        logger.exception("Failed to load application config")
         sys.exit(1)
 
 

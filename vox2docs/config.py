@@ -108,7 +108,6 @@ class Config(BaseModel):
                 data = yaml.safe_load(f)
             config = cls.model_validate(data)
         except Exception as e:
-            logger.exception("Failed to load config from %s", path)
             raise ConfigLoadError.from_path(path) from e
         else:
             logger.debug("Loaded configuration from %s", path)
