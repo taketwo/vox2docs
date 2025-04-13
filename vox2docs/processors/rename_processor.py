@@ -101,7 +101,7 @@ class RenameProcessor(Processor):
 
         """
         regex = re.compile(
-            r"^(?P<weekday>\w+) at (?P<hours>\d{2}):(?P<minutes>\d{2})(?:\..*)?$",
+            r"^(?P<weekday>\w+) at (?P<hours>\d{2})[:-](?P<minutes>\d{2})(?:\..*)?$",
         )
         match = regex.match(filename)
         if not match:

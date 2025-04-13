@@ -33,6 +33,13 @@ class TestParseFilename:
         assert info.hours == 1
         assert info.minutes == 5
 
+    def test_dash_separator(self):
+        """Test parsing when dash is used as separator."""
+        info = RenameProcessor.parse_filename("Thursday at 20-45.wav")
+        assert info.weekday_index == 3
+        assert info.hours == 20
+        assert info.minutes == 45
+
     def test_invalid_format(self):
         """Test parsing an invalid filename format."""
         with pytest.raises(InvalidFilenameError):
@@ -40,7 +47,7 @@ class TestParseFilename:
         with pytest.raises(InvalidFilenameError):
             RenameProcessor.parse_filename("Monday 10:30.m4a")
         with pytest.raises(InvalidFilenameError):
-            RenameProcessor.parse_filename("Monday at 10-30.m4a")
+            RenameProcessor.parse_filename("Monday at 1030.m4a")
 
     def test_unknown_weekday(self):
         """Test parsing unknown weekday name."""
