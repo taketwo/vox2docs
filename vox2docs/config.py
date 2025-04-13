@@ -41,6 +41,17 @@ class MonitorConfig(BaseModel):
     )
 
 
+class RenameProcessorConfig(BaseModel):
+    """Configuration for the rename processor."""
+
+    model_config = ConfigDict(frozen=True)
+
+    output_directory: Path = Field(
+        default="recordings",
+        description="Directory for processor output",
+    )
+
+
 class Config(BaseModel):
     """Application configuration."""
 
@@ -52,6 +63,10 @@ class Config(BaseModel):
     monitor: MonitorConfig = Field(
         default_factory=MonitorConfig,
         description="File monitor configuration",
+    )
+    rename: RenameProcessorConfig = Field(
+        default_factory=RenameProcessorConfig,
+        description="Rename processor configuration",
     )
 
     @classmethod
