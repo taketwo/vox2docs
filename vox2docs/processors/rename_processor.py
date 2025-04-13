@@ -2,15 +2,19 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
+from vox2docs.logging import get_logger
 from vox2docs.processors.processor import Processor
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     from vox2docs.config import RenameProcessorConfig
+
+
+logger = get_logger(__name__)
 
 
 class InvalidFilenameError(Exception):
@@ -62,7 +66,10 @@ class RenameProcessor(Processor):
             If the filename doesn't match the expected format
 
         """
-        reference_time = datetime.fromtimestamp(input_path.stat().st_mtime, tz=UTC)
+        local_tz = datetime.now().astimezone().tzinfo
+        reference_time = datetime.fromtimestamp(input_path.stat().st_mtime, tz=local_tz)
+
+        logger.debug("Last modified time of %s: %s", input_path, reference_time)
 
         recording_info = self.parse_filename(input_path.name)
         recording_datetime = self.find_matching_date(recording_info, reference_time)
@@ -123,6 +130,14 @@ class RenameProcessor(Processor):
 
         hours = int(match.group("hours"))
         minutes = int(match.group("minutes"))
+
+        logger.debug(
+            "Parsed filename '%s' into weekday: %d, hours: %d, minute:s %d",
+            filename,
+            weekday_index,
+            hours,
+            minutes,
+        )
 
         return RecordingInfo(weekday_index=weekday_index, hours=hours, minutes=minutes)
 
