@@ -39,6 +39,7 @@ class Pipeline:
         return cls(
             [
                 create_processor(config.rename),
+                create_processor(config.transcribe),
             ],
         )
 

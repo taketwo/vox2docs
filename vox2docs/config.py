@@ -52,6 +52,17 @@ class RenameProcessorConfig(BaseModel):
     )
 
 
+class TranscribeProcessorConfig(BaseModel):
+    """Configuration for the transcribe processor."""
+
+    model_config = ConfigDict(frozen=True)
+
+    output_directory: Path = Field(
+        default="transcripts/raw",
+        description="Directory for processor output",
+    )
+
+
 class Config(BaseModel):
     """Application configuration."""
 
@@ -67,6 +78,10 @@ class Config(BaseModel):
     rename: RenameProcessorConfig = Field(
         default_factory=RenameProcessorConfig,
         description="Rename processor configuration",
+    )
+    transcribe: TranscribeProcessorConfig = Field(
+        default_factory=TranscribeProcessorConfig,
+        description="Transcribe processor configuration",
     )
 
     @classmethod
