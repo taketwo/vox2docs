@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 from vox2docs.logging import get_logger
 from vox2docs.monitor import NewFileMonitor
+from vox2docs.pipeline import Pipeline, PipelineExecutionError
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -31,6 +32,7 @@ class Daemon:
             extensions=config.monitor.extensions,
             queue=self.pending,
         )
+        self.pipeline = Pipeline.from_config(config)
         signal.signal(signal.SIGTERM, self._handle_termination)
         signal.signal(signal.SIGINT, self._handle_termination)
 
@@ -51,12 +53,21 @@ class Daemon:
         try:
             while True:
                 if self.pending:
+                    logger.debug("Processing queue has %d file(s)", len(self.pending))
                     path = self.pending.popleft()
+                    logger.debug("Picked %s for processing", path)
                     try:
-                        # TODO: Replace print with actual processing
-                        logger.info("Would process %s", path)
-                    except Exception:
-                        logger.exception("Failed to process %s", path)
+                        self.pipeline.process(path)
+                        logger.info(
+                            "Finished processing %s, removing original file from input directory",
+                            path,
+                        )
+                        path.unlink()
+                    except PipelineExecutionError:
+                        logger.exception(
+                            "Pipeline execution failed for %s; file remains in input directory",
+                            path,
+                        )
                 time.sleep(1)
         except SystemExit:
             logger.info("Shutting down daemon...")
