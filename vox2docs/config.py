@@ -63,6 +63,17 @@ class TranscribeProcessorConfig(BaseModel):
     )
 
 
+class CleanupProcessorConfig(BaseModel):
+    """Configuration for the cleanup processor."""
+
+    model_config = ConfigDict(frozen=True)
+
+    output_directory: Path = Field(
+        default="transcripts/clean",
+        description="Directory for processor output",
+    )
+
+
 class Config(BaseModel):
     """Application configuration."""
 
@@ -82,6 +93,10 @@ class Config(BaseModel):
     transcribe: TranscribeProcessorConfig = Field(
         default_factory=TranscribeProcessorConfig,
         description="Transcribe processor configuration",
+    )
+    cleanup: CleanupProcessorConfig = Field(
+        default_factory=CleanupProcessorConfig,
+        description="Cleanup processor configuration",
     )
 
     @classmethod

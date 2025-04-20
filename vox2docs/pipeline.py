@@ -40,6 +40,7 @@ class Pipeline:
             [
                 create_processor(config.rename),
                 create_processor(config.transcribe),
+                create_processor(config.cleanup),
             ],
         )
 

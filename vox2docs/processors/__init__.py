@@ -8,6 +8,7 @@ configuration objects.
 
 from typing import Any
 
+from vox2docs.processors.cleanup_processor import CleanupProcessor
 from vox2docs.processors.processor import Processor
 from vox2docs.processors.rename_processor import RenameProcessor
 from vox2docs.processors.transcribe_processor import TranscribeProcessor
@@ -63,6 +64,7 @@ def create_processor(config: Any) -> Processor:  # noqa: ANN401
 
 
 __all__ = [
+    "CleanupProcessor",
     "Processor",
     "RenameProcessor",
     "TranscribeProcessor",
