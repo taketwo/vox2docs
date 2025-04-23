@@ -22,7 +22,12 @@ class CleanupProcessor(Processor):
         """Clean up the transcript file and save the cleaned version."""
         output_path = self.config.output_directory / input_path.name
         self.config.output_directory.mkdir(parents=True, exist_ok=True)
-        # TODO: Replace this placeholder with actual cleanup logic
+        previous_line = ""
         with output_path.open("w") as f:
-            f.write("Cleaned up content of " + str(input_path))
+            for line in input_path.open("r"):
+                cleaned_line = line.strip().removesuffix("...") + "\n"
+                if previous_line != cleaned_line:
+                    f.write(cleaned_line)
+                    previous_line = cleaned_line
+        # TODO: Replace this placeholder with LLM-based cleanup logic
         return output_path
