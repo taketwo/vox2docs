@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from vox2docs.logging import get_logger
@@ -26,16 +26,17 @@ class InvalidFilenameError(Exception):
         return cls(f"Filename '{filename}' does not match expected format")
 
     @classmethod
-    def unknown_weekday(cls, weekday: str) -> InvalidFilenameError:
-        """Create error for unknown weekday in filename."""
-        return cls(f"Unknown weekday '{weekday}' in filename")
+    def unknown_month(cls, month: str) -> InvalidFilenameError:
+        """Create error for unknown month in filename."""
+        return cls(f"Unknown month '{month}' in filename")
 
 
 @dataclass
 class RecordingInfo:
     """Information extracted from a recording filename."""
 
-    weekday_index: int
+    month: int
+    day: int
     hours: int
     minutes: int
 
@@ -108,75 +109,94 @@ class RenameProcessor(Processor):
 
         """
         regex = re.compile(
-            r"^(?P<weekday>\w+) at (?P<hours>\d{2})[:-](?P<minutes>\d{2})(?:\..*)?$",
+            r"^(?P<day>\d{1,2}) (?P<month>\w+) at (?P<hours>\d{2})[:-](?P<minutes>\d{2})(?:\..*)?$",
         )
         match = regex.match(filename)
         if not match:
             raise InvalidFilenameError.unexpected_format(filename)
 
-        weekday_name = match.group("weekday")
+        month_name = match.group("month")
         try:
-            weekday_index = [
-                "Monday",
-                "Tuesday",
-                "Wednesday",
-                "Thursday",
-                "Friday",
-                "Saturday",
-                "Sunday",
-            ].index(weekday_name)
+            month_index = [
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
+                "May",
+                "Jun",
+                "Jul",
+                "Aug",
+                "Sep",
+                "Oct",
+                "Nov",
+                "Dec",
+            ].index(month_name) + 1
         except ValueError as e:
-            raise InvalidFilenameError.unknown_weekday(weekday_name) from e
+            raise InvalidFilenameError.unknown_month(month_name) from e
 
+        day = int(match.group("day"))
         hours = int(match.group("hours"))
         minutes = int(match.group("minutes"))
 
         logger.debug(
-            "Parsed filename '%s' into weekday: %d, hours: %d, minute:s %d",
+            "Parsed filename '%s' into month: %d, day: %d, hours: %d, minutes: %d",
             filename,
-            weekday_index,
+            month_index,
+            day,
             hours,
             minutes,
         )
 
-        return RecordingInfo(weekday_index=weekday_index, hours=hours, minutes=minutes)
+        return RecordingInfo(month=month_index, day=day, hours=hours, minutes=minutes)
 
     @staticmethod
     def find_matching_date(
         recording_info: RecordingInfo,
         reference_time: datetime,
     ) -> datetime:
-        """Find the date of the most recent occurrence of the given weekday and time.
+        """Find the date of the most recent occurrence of the given month/day and time.
 
-        This method determines the most recent date that matches the weekday and time
+        This method determines the most recent date that matches the month, day and time
         in the recording_info and is not in the future relative to reference_time. It
-        starts from the reference time and steps backward one day at a time until
-        finding the first matching weekday.
+        handles year boundaries by checking both current and previous year.
 
         Parameters
         ----------
         recording_info : RecordingInfo
-            Recording information containing the weekday index
+            Recording information containing the month, day, hours and minutes
         reference_time : datetime
             Reference time to calculate from
 
         Returns
         -------
         datetime
-            Date of the most recent occurrence of the weekday
+            Date of the most recent occurrence of the month/day and time
 
         """
-        candidate_time = reference_time.replace(
-            hour=recording_info.hours,
-            minute=recording_info.minutes,
-            second=0,
-            microsecond=0,
-        )
+        # Try current year first
+        try:
+            candidate_time = reference_time.replace(
+                month=recording_info.month,
+                day=recording_info.day,
+                hour=recording_info.hours,
+                minute=recording_info.minutes,
+                second=0,
+                microsecond=0,
+            )
+        except ValueError:
+            # Invalid date (e.g., Feb 29 in non-leap year), try previous year
+            candidate_time = reference_time.replace(
+                year=reference_time.year - 1,
+                month=recording_info.month,
+                day=recording_info.day,
+                hour=recording_info.hours,
+                minute=recording_info.minutes,
+                second=0,
+                microsecond=0,
+            )
 
-        while (
-            candidate_time > reference_time
-            or candidate_time.weekday() != recording_info.weekday_index
-        ):
-            candidate_time -= timedelta(days=1)
+        # If candidate is in the future, use previous year's occurrence
+        if candidate_time > reference_time:
+            candidate_time = candidate_time.replace(year=candidate_time.year - 1)
 
         return candidate_time
