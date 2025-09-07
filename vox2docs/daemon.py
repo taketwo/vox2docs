@@ -31,6 +31,7 @@ class Daemon:
             path=config.monitor.input_directory,
             extensions=config.monitor.extensions,
             queue=self.pending,
+            scan_on_startup=config.monitor.scan_on_startup,
         )
         self.pipeline = Pipeline.from_config(config)
         signal.signal(signal.SIGTERM, self._handle_termination)

@@ -39,6 +39,10 @@ class MonitorConfig(BaseModel):
         default_factory=lambda: {".m4a"},
         description="File extensions to monitor",
     )
+    scan_on_startup: bool = Field(
+        default=True,
+        description="Whether to scan the directory for existing files at startup",
+    )
 
 
 class RenameProcessorConfig(BaseModel):
