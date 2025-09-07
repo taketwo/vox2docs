@@ -126,7 +126,7 @@ class RenameProcessor(Processor):
                 "Jun",
                 "Jul",
                 "Aug",
-                "Sep",
+                "Sept",
                 "Oct",
                 "Nov",
                 "Dec",
