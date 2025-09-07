@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import shutil
 from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -81,8 +82,6 @@ class RenameProcessor(Processor):
 
         self.config.output_directory.mkdir(parents=True, exist_ok=True)
         output_path = self.config.output_directory / output_filename
-
-        import shutil
 
         shutil.copy2(input_path, output_path)
 
