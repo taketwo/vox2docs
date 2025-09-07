@@ -83,6 +83,7 @@ class RenameProcessor(Processor):
         self.config.output_directory.mkdir(parents=True, exist_ok=True)
         output_path = self.config.output_directory / output_filename
 
+        logger.debug("Copying %s to %s", input_path.name, output_filename)
         shutil.copy2(input_path, output_path)
 
         return output_path
