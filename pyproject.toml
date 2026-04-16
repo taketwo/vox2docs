@@ -79,12 +79,6 @@ skip_covered = false
 [tool.uv]
 default-groups = ["dev", "test"]
 
-[tool.hatch.build.targets.sdist]
-include = ["vox2docs"]
-
-[tool.hatch.build.targets.wheel]
-include = ["vox2docs"]
-
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["uv_build"]
+build-backend = "uv_build"
