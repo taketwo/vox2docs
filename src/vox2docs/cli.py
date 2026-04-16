@@ -5,11 +5,12 @@ from importlib import metadata
 from pathlib import Path
 
 import click
+from rich.console import Console
+from rich.pretty import Pretty
 
 from vox2docs.config import Config, ConfigLoadError
 from vox2docs.daemon import Daemon
-from vox2docs.logging import configure_logging, DEBUG, get_logger, INFO
-
+from vox2docs.logging import DEBUG, INFO, configure_logging, get_logger
 
 logger = get_logger(__name__)
 
@@ -79,9 +80,6 @@ def config() -> None:
 @pass_state
 def show(state: State) -> None:
     """Display the loaded config."""
-    from rich.console import Console
-    from rich.pretty import Pretty
-
     Console().print(
         Pretty(
             state.config,

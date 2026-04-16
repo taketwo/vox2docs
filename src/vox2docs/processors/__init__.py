@@ -57,10 +57,10 @@ def create_processor(config: Any) -> Processor:  # noqa: ANN401
     processor_name = config_name[:-6]
     try:
         return globals()[processor_name](config)
-    except KeyError:
+    except KeyError as err:
         raise ValueError(
             f"Processor class '{processor_name}' not found for config type: {config_name}",
-        )
+        ) from err
 
 
 __all__ = [

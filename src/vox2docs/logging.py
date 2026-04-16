@@ -39,11 +39,11 @@ class InteractiveLogHandler(RichHandler):
 
         """
         super().__init__(
+            *args,
             rich_tracebacks=True,
             tracebacks_show_locals=True,
             show_time=True,
             console=Console(stderr=True),
-            *args,
             **kwargs,
         )
 
