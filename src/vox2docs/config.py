@@ -32,7 +32,7 @@ class MonitorConfig(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     input_directory: Path = Field(
-        default="inbox",
+        default=Path("inbox"),
         description="Directory to watch for new recordings",
     )
     extensions: set[str] = Field(
@@ -51,7 +51,7 @@ class RenameProcessorConfig(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     output_directory: Path = Field(
-        default="recordings",
+        default=Path("recordings"),
         description="Directory for processor output",
     )
 
@@ -62,7 +62,7 @@ class TranscribeProcessorConfig(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     output_directory: Path = Field(
-        default="transcripts/raw",
+        default=Path("transcripts/raw"),
         description="Directory for processor output",
     )
 
@@ -73,7 +73,7 @@ class CleanupProcessorConfig(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     output_directory: Path = Field(
-        default="transcripts/clean",
+        default=Path("transcripts/clean"),
         description="Directory for processor output",
     )
 
