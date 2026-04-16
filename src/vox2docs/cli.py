@@ -11,6 +11,9 @@ from rich.pretty import Pretty
 from vox2docs.config import Config, ConfigLoadError
 from vox2docs.daemon import Daemon
 from vox2docs.logging import DEBUG, INFO, configure_logging, get_logger
+from vox2docs.processors.cleanup_processor import CleanupProcessor
+from vox2docs.processors.rename_processor import InvalidFilenameError, RenameProcessor
+from vox2docs.processors.transcribe_processor import TranscribeProcessor
 
 logger = get_logger(__name__)
 
@@ -26,9 +29,7 @@ def get_version() -> str:
 class State:
     """Application state holding global configuration."""
 
-    def __init__(self) -> None:
-        """Initialize the state."""
-        self.config: Config | None = None
+    config: Config
 
 
 pass_state = click.make_pass_decorator(State, ensure=True)
@@ -88,6 +89,42 @@ def show(state: State) -> None:
             expand_all=True,
         ),
     )
+
+
+@main.group()
+def step() -> None:
+    """Run a single processing step on a file."""
+
+
+@step.command()
+@click.argument("file", type=click.Path(exists=True, path_type=Path))
+@pass_state
+def rename(state: State, *, file: Path) -> None:
+    """Run the rename step on a recording file."""
+    try:
+        output = RenameProcessor(state.config.rename).process(file)
+    except InvalidFilenameError as e:
+        logger.error("Cannot rename %s: %s", file.name, e)  # noqa: TRY400
+        sys.exit(1)
+    click.echo(output)
+
+
+@step.command()
+@click.argument("file", type=click.Path(exists=True, path_type=Path))
+@pass_state
+def transcribe(state: State, *, file: Path) -> None:
+    """Run the transcribe step on a recording file."""
+    output = TranscribeProcessor(state.config.transcribe).process(file)
+    click.echo(output)
+
+
+@step.command()
+@click.argument("file", type=click.Path(exists=True, path_type=Path))
+@pass_state
+def cleanup(state: State, *, file: Path) -> None:
+    """Run the cleanup step on a transcript file."""
+    output = CleanupProcessor(state.config.cleanup).process(file)
+    click.echo(output)
 
 
 if __name__ == "__main__":
