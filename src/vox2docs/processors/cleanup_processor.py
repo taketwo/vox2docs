@@ -5,7 +5,10 @@ from typing import TYPE_CHECKING
 import llm
 from jinja2 import Environment, PackageLoader
 
+from vox2docs.logging import get_logger
 from vox2docs.processors.processor import Processor
+
+logger = get_logger(__name__)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -32,10 +35,13 @@ class CleanupProcessor(Processor):
         output_path = self.config.output_directory / input_path.name
         self.config.output_directory.mkdir(parents=True, exist_ok=True)
 
+        logger.info("Cleaning up %s using %s", input_path.name, self.config.llm_model)
         transcript = self._preprocess(input_path)
+        logger.debug("Pre-processing complete, sending to LLM")
         cleaned = self._llm_cleanup(transcript)
 
         output_path.write_text(cleaned)
+        logger.info("Cleanup complete: %s", output_path)
         return output_path
 
     def _preprocess(self, input_path: Path) -> str:
