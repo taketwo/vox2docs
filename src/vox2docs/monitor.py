@@ -6,7 +6,13 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from watchdog.events import FileCreatedEvent, FileModifiedEvent, FileSystemEventHandler
+from watchdog.events import (
+    DirCreatedEvent,
+    DirModifiedEvent,
+    FileCreatedEvent,
+    FileModifiedEvent,
+    FileSystemEventHandler,
+)
 from watchdog.observers import Observer
 
 if TYPE_CHECKING:
@@ -157,7 +163,7 @@ class _MonitorEventHandler(FileSystemEventHandler):
         self.extensions = extensions
         self.queue = queue
 
-    def on_created(self, event: FileCreatedEvent) -> None:
+    def on_created(self, event: DirCreatedEvent | FileCreatedEvent) -> None:
         """Handle file creation events.
 
         Validates new files and adds their paths to the queue if they match the
@@ -165,11 +171,11 @@ class _MonitorEventHandler(FileSystemEventHandler):
 
         Parameters
         ----------
-        event : FileCreatedEvent
+        event : DirCreatedEvent | FileCreatedEvent
             The file creation event.
 
         """
-        path = Path(event.src_path)
+        path = Path(str(event.src_path))
         relative_path = path.relative_to(self.path)
         size = path.stat().st_size
         logger.debug(
@@ -189,18 +195,18 @@ class _MonitorEventHandler(FileSystemEventHandler):
         logger.info("Discovered new file: %s", relative_path)
         self.queue.append(path)
 
-    def on_modified(self, event: FileModifiedEvent) -> None:
+    def on_modified(self, event: DirModifiedEvent | FileModifiedEvent) -> None:
         """Handle file modification events.
 
         Logs modifications to monitored files for debugging purposes.
 
         Parameters
         ----------
-        event : FileModifiedEvent
+        event : DirModifiedEvent | FileModifiedEvent
             The file modification event.
 
         """
-        path = Path(event.src_path)
+        path = Path(str(event.src_path))
         relative_path = path.relative_to(self.path)
         size = path.stat().st_size
         logger.debug(

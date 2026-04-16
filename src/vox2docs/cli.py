@@ -67,6 +67,8 @@ def daemon() -> None:
 @pass_state
 def run(state: State) -> None:
     """Run the daemon process."""
+    if state.config is None:
+        raise RuntimeError("Config is not loaded")
     daemon = Daemon(state.config)
     daemon.run()
 
