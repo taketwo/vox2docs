@@ -76,6 +76,13 @@ class CleanupProcessorConfig(BaseModel):
         default=Path("transcripts/clean"),
         description="Directory for processor output",
     )
+    llm_model: str = Field(
+        description="LLM model name to use for cleanup (e.g. 'claude-sonnet-4-6')",
+    )
+    speaker_background: str = Field(
+        default="",
+        description="Personal background information inserted into the LLM cleanup prompt",
+    )
 
 
 class Config(BaseModel):

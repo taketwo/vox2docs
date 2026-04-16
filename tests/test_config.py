@@ -10,7 +10,11 @@ from vox2docs.config import Config, ConfigLoadError
 
 def make_config(tmp_path: Path, extra: dict | None = None) -> Config:
     """Create a Config with base_directory set to tmp_path."""
-    data = {"base_directory": str(tmp_path), **(extra or {})}
+    data = {
+        "base_directory": str(tmp_path),
+        "cleanup": {"llm_model": "test-model"},
+        **(extra or {}),
+    }
     return Config.model_validate(data)
 
 
@@ -49,7 +53,9 @@ class TestResolvePathsAbsolute:
 
 class TestResolvePathsHomeExpansion:
     def test_tilde_in_base_directory_expanded(self) -> None:
-        config = Config.model_validate({"base_directory": "~/vox2docs"})
+        config = Config.model_validate(
+            {"base_directory": "~/vox2docs", "cleanup": {"llm_model": "test-model"}}
+        )
         assert not str(config.base_directory).startswith("~")
         assert config.base_directory.is_absolute()
 
@@ -57,7 +63,14 @@ class TestResolvePathsHomeExpansion:
 class TestFromPath:
     def test_loads_valid_yaml(self, tmp_path: Path) -> None:
         config_file = tmp_path / "config.yaml"
-        config_file.write_text(yaml.dump({"base_directory": str(tmp_path)}))
+        config_file.write_text(
+            yaml.dump(
+                {
+                    "base_directory": str(tmp_path),
+                    "cleanup": {"llm_model": "test-model"},
+                }
+            )
+        )
         config = Config.from_path(config_file)
         assert config.base_directory == tmp_path.resolve()
 
@@ -68,6 +81,7 @@ class TestFromPath:
                 {
                     "base_directory": str(tmp_path),
                     "rename": {"output_directory": "custom"},
+                    "cleanup": {"llm_model": "test-model"},
                 }
             )
         )
@@ -94,7 +108,14 @@ class TestFromPath:
 class TestFromPathOrDefault:
     def test_uses_explicit_path(self, tmp_path: Path) -> None:
         config_file = tmp_path / "config.yaml"
-        config_file.write_text(yaml.dump({"base_directory": str(tmp_path)}))
+        config_file.write_text(
+            yaml.dump(
+                {
+                    "base_directory": str(tmp_path),
+                    "cleanup": {"llm_model": "test-model"},
+                }
+            )
+        )
         config = Config.from_path_or_default(config_file)
         assert config.base_directory == tmp_path.resolve()
 
@@ -104,7 +125,14 @@ class TestFromPathOrDefault:
         default_dir = tmp_path / ".config" / "vox2docs"
         default_dir.mkdir(parents=True)
         config_file = default_dir / "config.yaml"
-        config_file.write_text(yaml.dump({"base_directory": str(tmp_path)}))
+        config_file.write_text(
+            yaml.dump(
+                {
+                    "base_directory": str(tmp_path),
+                    "cleanup": {"llm_model": "test-model"},
+                }
+            )
+        )
         monkeypatch.setenv("HOME", str(tmp_path))
         config = Config.from_path_or_default()
         assert config.base_directory == tmp_path.resolve()
