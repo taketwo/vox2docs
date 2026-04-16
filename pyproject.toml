@@ -22,7 +22,7 @@ ollama = ["llm-ollama>=0.9.1"]
 anthropic = ["llm-anthropic>=0.15.1"]
 
 [dependency-groups]
-dev = ["mypy>=1.14.1,<2", "ruff>=0.15.10", "types-pyyaml>=6.0.12.20241230,<7"]
+dev = ["ruff>=0.15.10", "ty>=0.0.31"]
 test = ["pytest>=8.3.4,<9", "pytest-cov>=7.1.0"]
 
 [tool.ruff]
@@ -62,6 +62,12 @@ lint.per-file-ignores."**/conftest.py" = [
   "ANN",    # type annotations are not required in conftest
   "INP001", # tests/ is an implicit namespace package
 ]
+
+[tool.ty.environment]
+extra-paths = ["src"]
+
+[tool.ty.src]
+exclude = ["tests/"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
