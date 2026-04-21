@@ -1,5 +1,7 @@
 """Command line interface for vox2docs."""
 
+import os
+import subprocess
 import sys
 from importlib import metadata
 from pathlib import Path
@@ -14,6 +16,10 @@ from vox2docs.logging import DEBUG, INFO, configure_logging, get_logger
 from vox2docs.processors.cleanup_processor import CleanupProcessor
 from vox2docs.processors.rename_processor import InvalidFilenameError, RenameProcessor
 from vox2docs.processors.transcribe_processor import TranscribeProcessor
+
+_SERVICE_NAME = "vox2docs"
+_UNIT_DIR = Path.home() / ".config" / "systemd" / "user"
+_UNIT_FILE = _UNIT_DIR / f"{_SERVICE_NAME}.service"
 
 logger = get_logger(__name__)
 
@@ -70,8 +76,73 @@ def run(state: State) -> None:
     """Run the daemon process."""
     if state.config is None:
         raise RuntimeError("Config is not loaded")
-    daemon = Daemon(state.config)
-    daemon.run()
+    daemon_instance = Daemon(state.config)
+    daemon_instance.run()
+
+
+@daemon.command()
+def install() -> None:
+    """Install and start the systemd user service."""
+    executable = sys.argv[0]
+
+    unit_content = f"""\
+[Unit]
+Description=vox2docs daemon
+After=network.target
+
+[Service]
+Type=simple
+ExecStart={executable} --debug daemon run
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
+"""
+
+    _UNIT_DIR.mkdir(parents=True, exist_ok=True)
+    _UNIT_FILE.write_text(unit_content)
+    click.echo(f"Wrote unit file: {_UNIT_FILE}")
+
+    subprocess.run(["systemctl", "--user", "daemon-reload"], check=True)
+    subprocess.run(
+        ["systemctl", "--user", "enable", "--now", _SERVICE_NAME], check=True
+    )
+    click.echo("Service installed and started")
+
+
+@daemon.command()
+def uninstall() -> None:
+    """Stop, disable, and remove the systemd user service."""
+    subprocess.run(
+        ["systemctl", "--user", "disable", "--now", _SERVICE_NAME], check=False
+    )
+    if _UNIT_FILE.exists():
+        _UNIT_FILE.unlink()
+        click.echo(f"Removed unit file: {_UNIT_FILE}")
+    subprocess.run(["systemctl", "--user", "daemon-reload"], check=True)
+    click.echo("Service uninstalled")
+
+
+@daemon.command()
+def status() -> None:
+    """Show the status of the systemd user service."""
+    result = subprocess.run(
+        ["systemctl", "--user", "status", _SERVICE_NAME],
+        check=False,
+    )
+    sys.exit(result.returncode)
+
+
+@daemon.command(
+    context_settings={"ignore_unknown_options": True, "allow_extra_args": True},
+)
+@click.argument("journalctl_args", nargs=-1, type=click.UNPROCESSED)
+def logs(journalctl_args: tuple[str, ...]) -> None:
+    """Show logs for the systemd user service (passes args to journalctl)."""
+    os.execvp(
+        "journalctl",
+        ["journalctl", "--user", "-u", _SERVICE_NAME, *journalctl_args],
+    )
 
 
 @main.group()
