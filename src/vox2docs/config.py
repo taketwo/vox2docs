@@ -65,6 +65,26 @@ class TranscribeProcessorConfig(BaseModel):
         default=Path("transcripts/raw"),
         description="Directory for processor output",
     )
+    device: str = Field(
+        default="cuda",
+        description="Device to use for inference ('cuda' or 'cpu')",
+    )
+    compute_type: str = Field(
+        default="float16",
+        description="Compute type for inference (e.g. 'float16', 'int8_float16', 'int8')",
+    )
+    model_size: str = Field(
+        default="large-v3-turbo",
+        description="Whisper model size (e.g. 'large-v3-turbo', 'large-v3', 'medium')",
+    )
+    vad_filter: bool = Field(
+        default=True,
+        description="Use VAD filter to remove silence",
+    )
+    vad_min_silence_duration_ms: int = Field(
+        default=5000,
+        description="Minimum silence duration in milliseconds for VAD filter",
+    )
 
 
 class CleanupProcessorConfig(BaseModel):
