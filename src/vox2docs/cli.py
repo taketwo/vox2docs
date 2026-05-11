@@ -20,6 +20,8 @@ from vox2docs.processors.transcribe_processor import TranscribeProcessor
 _SERVICE_NAME = "vox2docs"
 _UNIT_DIR = Path.home() / ".config" / "systemd" / "user"
 _UNIT_FILE = _UNIT_DIR / f"{_SERVICE_NAME}.service"
+_API_KEYS_FILE = Path.home() / ".config" / "vox2docs" / "api-keys.env"
+_API_KEYS_STUB = "# API keys for vox2docs\nANTHROPIC_API_KEY=\n"
 
 logger = get_logger(__name__)
 
@@ -92,6 +94,7 @@ After=network.target
 
 [Service]
 Type=simple
+EnvironmentFile={_API_KEYS_FILE}
 ExecStart={executable} --debug daemon run
 Restart=on-failure
 
@@ -102,6 +105,14 @@ WantedBy=default.target
     _UNIT_DIR.mkdir(parents=True, exist_ok=True)
     _UNIT_FILE.write_text(unit_content)
     click.echo(f"Wrote unit file: {_UNIT_FILE}")
+
+    if not _API_KEYS_FILE.exists():
+        _API_KEYS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        _API_KEYS_FILE.write_text(_API_KEYS_STUB)
+        click.echo(f"Created API keys stub: {_API_KEYS_FILE}")
+        click.echo("  Fill in your API keys before starting the service.")
+    else:
+        click.echo(f"API keys file already exists: {_API_KEYS_FILE}")
 
     subprocess.run(["systemctl", "--user", "daemon-reload"], check=True)
     subprocess.run(
